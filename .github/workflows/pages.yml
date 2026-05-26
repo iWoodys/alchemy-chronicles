@@ -26,11 +26,23 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
       - name: Prepare site folder
         run: |
-          rm -rf public
-          mkdir public
-          unzip -q site.zip -d public
+          rm -rf public tmp_site
+          mkdir public tmp_site
+          unzip -q site.zip -d tmp_site
+
+          if [ -f "tmp_site/index.html" ]; then
+            cp -r tmp_site/* public/
+          else
+            INNER_DIR=$(find tmp_site -mindepth 1 -maxdepth 1 -type d | head -n 1)
+            cp -r "$INNER_DIR"/* public/
+          fi
+
+          test -f public/index.html
           ls -la public
 
       - name: Upload Pages artifact
